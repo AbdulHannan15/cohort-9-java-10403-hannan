@@ -12,4 +12,4 @@ public class CmsApplication {
 	}
 
 }
-src/main/resources/application.properties
+
