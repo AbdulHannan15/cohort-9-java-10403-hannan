@@ -1,4 +1,4 @@
-package com.Contact.Management.System.Cms;
+package com.Contact.Management.System.Cms.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;

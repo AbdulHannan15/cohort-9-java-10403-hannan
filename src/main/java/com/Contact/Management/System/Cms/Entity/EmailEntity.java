@@ -1,4 +1,4 @@
-package com.Contact.Management.System.Cms;
+package com.Contact.Management.System.Cms.Entity;
 
 import com.Contact.Management.System.Cms.SupportingEnum.EmailType;
 import jakarta.persistence.*;

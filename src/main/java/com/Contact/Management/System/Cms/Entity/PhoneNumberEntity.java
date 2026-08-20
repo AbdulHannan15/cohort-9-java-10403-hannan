@@ -1,6 +1,7 @@
-package com.Contact.Management.System.Cms;
+package com.Contact.Management.System.Cms.Entity;
 
 
+import com.Contact.Management.System.Cms.SupportingEnum.PhoneNumberType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,7 +23,7 @@ public class PhoneNumberEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private PhoneNumberEntity numberType;
+    private PhoneNumberType numberType;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
