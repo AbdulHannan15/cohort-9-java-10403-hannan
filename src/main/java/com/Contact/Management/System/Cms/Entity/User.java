@@ -12,27 +12,24 @@ import java.util.List;
 @Setter
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     // to recover if user forget password
     @Column(nullable = false, unique = true)
     private String loginIdentifier;   // email to register/login
 
-    @Column(nullable = false)
-    private String password;          // Will be make safe at service level
 
-
+    @Setter(AccessLevel.NONE)
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
 
     @Column(unique = true)
     private String recoveryPhone;     // to recover if user forget password
-
-
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
@@ -53,5 +50,29 @@ public class User {
     @Builder.Default
     private RoleEnum role = RoleEnum.USER;
 
+    /*
+      The only way to change the hash directly on an existing entity.
+      Callers must already have run the raw password through
+      PasswordEncoder.encode() — this method just guards against blanks.
+     */
+    public void setPasswordHash(String encodedHash) {
+        if (encodedHash == null || encodedHash.isBlank()) {
+            throw new IllegalArgumentException("Password hash cannot be blank");
+        }
+        this.passwordHash = encodedHash;
+    }
 
+    /*
+      Lombok let you declare in .builder so i have to do to prevent builder
+      from skipping password encryption.
+     */
+    public static class UserBuilder {
+        public UserBuilder passwordHash(String encodedHash) {
+            if (encodedHash == null || encodedHash.isBlank()) {
+                throw new IllegalArgumentException("Password hash cannot be blank");
+            }
+            this.passwordHash = encodedHash;
+            return this;
+        }
+    }
 }

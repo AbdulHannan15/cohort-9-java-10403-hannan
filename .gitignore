@@ -4,6 +4,12 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# Application config with secrets — do not commit
+src/main/resources/application.properties
+
+*.class
+*.log
+
 ### STS ###
 .apt_generated
 .classpath
@@ -31,3 +37,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### OS files ###
+.DS_Store
+Thumbs.db
