@@ -17,7 +17,7 @@ public class PhoneNumberEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
+    private Long id;
 
     private String number;
 
@@ -27,11 +27,6 @@ public class PhoneNumberEntity {
 
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "contact_id", nullable = false)
     private Contact contact;
-
-
 }
-
-
-
