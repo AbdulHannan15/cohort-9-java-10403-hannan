@@ -12,6 +12,7 @@ import com.Contact.Management.System.Cms.Repo.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +35,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse register(RegisterRequest request) {
-        log.info("Registering new user with loginIdentifier={}", request.getLoginIdentifier());
+        log.info("Registering new user");
 
         if (!StringUtils.hasText(request.getLoginIdentifier())) {
             throw new IllegalArgumentException("Login identifier (email or phone) is required");
@@ -58,7 +59,15 @@ public class UserServiceImpl implements UserService {
                 .recoveryPhone(request.getRecoveryPhone())
                 .build();
 
-        User saved = userRepo.save(user);
+        User saved;
+        try {
+            saved = userRepo.save(user);
+        } catch (DataIntegrityViolationException e) {
+            // Guards against a race where two concurrent registrations both pass the
+            // existsBy* checks above and then hit the unique constraint on save.
+            log.warn("Registration failed - duplicate loginIdentifier or recoveryPhone on save");
+            throw new DuplicateResourceException("An account with this email/phone already exists");
+        }
         log.info("User registered successfully with id={}", saved.getId());
         return toResponse(saved);
     }

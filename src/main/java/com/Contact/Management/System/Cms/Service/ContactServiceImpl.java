@@ -17,6 +17,7 @@ import com.Contact.Management.System.Cms.Repo.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -62,7 +63,7 @@ public class ContactServiceImpl implements ContactService {
         attachEmails(contact, request.getEmails());
         attachNumbers(contact, request.getNumbers());
 
-        Contact saved = contactRepo.save(contact);
+        Contact saved = saveContact(contact);
         log.info("Contact created id={} for userId={}", saved.getId(), userId);
         return toResponse(saved);
     }
@@ -84,7 +85,7 @@ public class ContactServiceImpl implements ContactService {
         attachEmails(contact, request.getEmails());
         attachNumbers(contact, request.getNumbers());
 
-        Contact saved = contactRepo.save(contact);
+        Contact saved = saveContact(contact);
         log.info("Contact updated id={}", saved.getId());
         return toResponse(saved);
     }
@@ -144,11 +145,28 @@ public class ContactServiceImpl implements ContactService {
         }
     }
 
+    /**
+     * Saves the contact, translating a unique-constraint violation on the numbers
+     * table (a race where two concurrent requests both pass the existsByNumber
+     * check in {@link #attachNumbers}) into the existing 409 Conflict response
+     * instead of letting it surface as a generic 500.
+     */
+    private Contact saveContact(Contact contact) {
+        try {
+            return contactRepo.save(contact);
+        } catch (DataIntegrityViolationException e) {
+            throw new DuplicateResourceException("Phone number already in use");
+        }
+    }
+
     private void attachEmails(Contact contact, List<EmailDto> emails) {
         if (emails == null) {
             return;
         }
         for (EmailDto dto : emails) {
+            if (dto == null) {
+                throw new IllegalArgumentException("Email entry must not be null");
+            }
             if (!StringUtils.hasText(dto.getEmail())) {
                 continue;
             }
@@ -168,6 +186,9 @@ public class ContactServiceImpl implements ContactService {
             return;
         }
         for (PhoneNumberDto dto : numbers) {
+            if (dto == null) {
+                throw new IllegalArgumentException("Number entry must not be null");
+            }
             if (!StringUtils.hasText(dto.getNumber())) {
                 continue;
             }

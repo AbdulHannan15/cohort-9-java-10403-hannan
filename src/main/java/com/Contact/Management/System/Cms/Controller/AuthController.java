@@ -43,7 +43,7 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(request.getLoginIdentifier(), request.getPassword())
             );
         } catch (BadCredentialsException e) {
-            log.warn("Login failed for loginIdentifier={}", request.getLoginIdentifier());
+            log.warn("Login failed - invalid credentials");
             throw new InvalidCredentialsException("Invalid login credentials");
         }
 
